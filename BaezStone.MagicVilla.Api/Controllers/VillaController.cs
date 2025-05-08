@@ -33,6 +33,7 @@ public class VillaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public ActionResult<VillaDto> CreateVilla([FromBody] VillaDto villaDto)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
         if (villaDto is null) return BadRequest("El objeto es nulo.");
         if(villaDto.Id > 0) return StatusCode(StatusCodes.Status400BadRequest, "El Id debe ser cero");
         villaDto.Id = VillaStore.villaList.OrderByDescending(v => v.Id).FirstOrDefault()?.Id + 1 ?? 1;
