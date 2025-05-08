@@ -8,12 +8,12 @@ public static class VillaStore
         new VillaDto
         {
             Id = 1,
-            Nombre = "Villa 1"            
+            Nombre = "Villa 1"
         },
         new VillaDto
         {
             Id = 2,
-            Nombre = "Villa 2"            
+            Nombre = "Villa 2"
         }
     };
 }
