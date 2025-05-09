@@ -1,6 +1,7 @@
 ﻿using BaezStone.MagicVilla.Api.Models.Dto;
 using BaezStone.MagicVilla.Api.Store;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace BaezStone.MagicVilla.Api.Controllers;
 
@@ -36,6 +37,12 @@ public class VillaController : ControllerBase
         if (!ModelState.IsValid) return BadRequest(ModelState);
         if (villaDto is null) return BadRequest("El objeto es nulo.");
         if(villaDto.Id > 0) return StatusCode(StatusCodes.Status400BadRequest, "El Id debe ser cero");
+        if(VillaStore.villaList.FirstOrDefault(x => x.Nombre.ToLower() == villaDto.Nombre.ToLower()) is not null) 
+        { 
+            ModelState.AddModelError("NombreExistente", "Ya existe una villa con ese nombre.");
+            return BadRequest(ModelState);
+        }
+
         villaDto.Id = VillaStore.villaList.OrderByDescending(v => v.Id).FirstOrDefault()?.Id + 1 ?? 1;
 
         //if (VillaStore.villaList.Any(v => v.Id == villaDto.Id)) return BadRequest("Ya existe una villa con ese Id.");
