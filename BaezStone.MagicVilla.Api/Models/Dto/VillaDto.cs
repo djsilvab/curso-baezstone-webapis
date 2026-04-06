@@ -8,4 +8,6 @@ public class VillaDto
     [Required(ErrorMessage = "Nombre es requerido")]
     [MaxLength(30)]
     public string Nombre { get; set; }
+    public short Ocupantes{ get; set; }
+    public decimal MetrosCuadrados { get; set; }
 }

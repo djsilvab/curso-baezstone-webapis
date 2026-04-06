@@ -1,7 +1,7 @@
 ﻿using BaezStone.MagicVilla.Api.Models.Dto;
 using BaezStone.MagicVilla.Api.Store;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace BaezStone.MagicVilla.Api.Controllers;
 
@@ -9,10 +9,19 @@ namespace BaezStone.MagicVilla.Api.Controllers;
 [ApiController]
 public class VillaController : ControllerBase
 {
+    private readonly ILogger<VillaController> _logger;
+
+    public VillaController(ILogger<VillaController> logger)
+    {
+        _logger = logger;
+    }
+
+
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<VillaDto>> GetVillas()
     {
+        _logger.LogInformation("Obtener villas");
         return Ok(VillaStore.villaList);
     }
 
@@ -22,7 +31,11 @@ public class VillaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<VillaDto> GetVilla(int id)
     {
-        if (id == 0) return BadRequest("Id debe ser mayor a cero.");
+        if (id == 0)
+        {
+            _logger.LogError($"Error al traer la Villa con Id : ${id}");
+            return BadRequest("Id debe ser mayor a cero.");
+        }
         var villa = VillaStore.villaList.FirstOrDefault(v => v.Id == id);
         if (villa is null) return NotFound();
         return Ok(villa);
@@ -35,10 +48,10 @@ public class VillaController : ControllerBase
     public ActionResult<VillaDto> CreateVilla([FromBody] VillaDto villaDto)
     {
         if (villaDto is null) return BadRequest("El objeto es nulo.");
-        if (!ModelState.IsValid) return BadRequest(ModelState);        
-        if(villaDto.Id > 0) return StatusCode(StatusCodes.Status400BadRequest, "El Id debe ser cero");
-        if(VillaStore.villaList.FirstOrDefault(x => x.Nombre.Equals(villaDto.Nombre, StringComparison.OrdinalIgnoreCase)) is not null)
-        { 
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (villaDto.Id > 0) return StatusCode(StatusCodes.Status400BadRequest, "El Id debe ser cero");
+        if (VillaStore.villaList.FirstOrDefault(x => x.Nombre.Equals(villaDto.Nombre, StringComparison.OrdinalIgnoreCase)) is not null)
+        {
             ModelState.AddModelError("NombreExistente", "Ya existe una villa con ese nombre.");
             return BadRequest(ModelState);
         }
@@ -62,5 +75,36 @@ public class VillaController : ControllerBase
         if (villa is null) return NotFound();
         VillaStore.villaList.Remove(villa);
         return NoContent(); //204 No Content
+    }
+
+    [HttpPut("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public IActionResult UpdateVilla(int id, [FromBody] VillaDto villaDto)
+    {
+        if (villaDto == null || id != villaDto.Id) return BadRequest();
+        var villa = VillaStore.villaList.FirstOrDefault(x => x.Id == id);
+        if (villa is null) return NotFound();
+        villa.Nombre = villaDto.Nombre;
+        villa.Ocupantes = villaDto.Ocupantes;
+        villa.MetrosCuadrados = villaDto.MetrosCuadrados;
+
+        return NoContent();
+    }
+
+    [HttpPatch("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaDto> patchDto)
+    {
+        if (patchDto == null || id == 0) return BadRequest();
+
+        var villa = VillaStore.villaList.FirstOrDefault(x => x.Id == id);
+        if (villa is null) return NotFound();
+
+        patchDto.ApplyTo(villa, ModelState);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        return NoContent();
     }
 }

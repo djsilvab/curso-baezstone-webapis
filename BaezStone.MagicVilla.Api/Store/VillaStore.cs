@@ -8,12 +8,16 @@ public static class VillaStore
         new VillaDto
         {
             Id = 1,
-            Nombre = "Villa 1"
+            Nombre = "Vista a la piscina",
+            Ocupantes = 3,
+            MetrosCuadrados = 50
         },
         new VillaDto
         {
             Id = 2,
-            Nombre = "Villa 2"
+            Nombre = "Villa 2",
+            Ocupantes  = 4,
+            MetrosCuadrados = 80
         }
     };
 }
