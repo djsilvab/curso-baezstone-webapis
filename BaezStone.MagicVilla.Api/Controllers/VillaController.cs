@@ -21,7 +21,7 @@ public class VillaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<VillaDto>> GetVillas()
     {
-        _logger.LogInformation("Obtener villas");
+        _logger.LogInformation("Obtener todas las villas");
         return Ok(VillaStore.villaList);
     }
 
@@ -33,7 +33,7 @@ public class VillaController : ControllerBase
     {
         if (id == 0)
         {
-            _logger.LogError($"Error al traer la Villa con Id : ${id}");
+            _logger.LogError($"Error al obtener la Villa con Id : {id}");
             return BadRequest("Id debe ser mayor a cero.");
         }
         var villa = VillaStore.villaList.FirstOrDefault(v => v.Id == id);

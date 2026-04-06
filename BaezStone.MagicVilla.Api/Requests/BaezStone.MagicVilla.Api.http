@@ -2,16 +2,11 @@
 @contentType = application/json
 @patchContentType = application/json-patch+json
 
-GET {{baseUrl}}/weatherforecast/
-Accept: {{contentType}}
-
-###
-
 GET {{baseUrl}}/api/Villa
 
 ###
 
-GET {{baseUrl}}/api/Villa/1
+GET {{baseUrl}}/api/Villa/0
 
 ###
 
