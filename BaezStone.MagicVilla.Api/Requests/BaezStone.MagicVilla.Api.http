@@ -1,0 +1,18 @@
+@baseUrl = https://localhost:7093
+@contentType = application/json
+@patchContentType = application/json-patch+json
+
+GET {{baseUrl}}/api/Villa
+
+###
+
+GET {{baseUrl}}/api/Villa/0
+
+###
+
+PATCH {{baseUrl}}/api/Villa/1
+Content-Type: {{patchContentType}}
+
+[
+  { "op": "replace", "path": "/nombre", "value": "Nueva Villa Fátima" }
+]

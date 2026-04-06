@@ -1,7 +1,0 @@
-@baseUrl = http://localhost:5286
-@contentType = application/json
-
-GET {{baseUrl}}/weatherforecast/
-Accept: {{contentType}}
-
-###
