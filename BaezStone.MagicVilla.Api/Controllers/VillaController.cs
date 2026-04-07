@@ -52,16 +52,13 @@ public class VillaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public ActionResult<VillaDto> CreateVilla([FromBody] VillaDto villaDto)
+    public ActionResult<VillaDto> CreateVilla([FromBody] VillaCreateDto villaDto)
     {
         if (villaDto is null) 
             return BadRequest("El objeto es nulo.");
 
         if (!ModelState.IsValid) 
             return BadRequest(ModelState);
-
-        if (villaDto.Id > 0) 
-            return BadRequest("El Id debe ser cero");
 
         // Normalizar el nombre recibido y proteger contra nulls para la consulta EF
         var nombreNormalized = (villaDto.Nombre ?? string.Empty).Trim().ToLower();
@@ -77,7 +74,7 @@ public class VillaController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        Villa modelo = new Villa
+        var modelo = new Villa
         {
             Nombre = (villaDto.Nombre ?? string.Empty).Trim(),
             Detalle = villaDto.Detalle,
@@ -92,9 +89,6 @@ public class VillaController : ControllerBase
 
         _dbContext.Villas.Add(modelo);
         _dbContext.SaveChanges();
-
-        // Asignar el Id generado al DTO antes de devolverlo
-        villaDto.Id = modelo.Id;
 
         return CreatedAtAction(nameof(GetVilla), new { id = modelo.Id }, villaDto);
     }
@@ -118,16 +112,11 @@ public class VillaController : ControllerBase
     [HttpPut("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public IActionResult UpdateVilla(int id, [FromBody] VillaDto villaDto)
+    public IActionResult UpdateVilla(int id, [FromBody] VillaUpdateDto villaDto)
     {
-        if (villaDto == null || id != villaDto.Id) return BadRequest();
-        //var villa = VillaStore.villaList.FirstOrDefault(x => x.Id == id);
-        //if (villa is null) return NotFound();
-        //villa.Nombre = villaDto.Nombre;
-        //villa.Ocupantes = villaDto.Ocupantes;
-        //villa.MetrosCuadrados = villaDto.MetrosCuadrados;
+        if (villaDto == null || id != villaDto.Id) return BadRequest();        
 
-        Villa modelo = new Villa
+        var modelo = new Villa
         {
             Id = id,
             Nombre = villaDto.Nombre,
@@ -148,7 +137,7 @@ public class VillaController : ControllerBase
     [HttpPatch("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaDto> patchDto)
+    public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaUpdateDto> patchDto)
     {
         if (patchDto == null || id == 0) 
             return BadRequest();
@@ -158,7 +147,7 @@ public class VillaController : ControllerBase
         if (villaEntity is null) 
             return NotFound();
 
-        var villaDto = new VillaDto
+        var villaDto = new VillaUpdateDto
         {
             Id = villaEntity.Id,
             Nombre = villaEntity.Nombre,
