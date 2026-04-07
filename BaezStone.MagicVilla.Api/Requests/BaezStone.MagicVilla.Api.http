@@ -6,7 +6,8 @@ GET {{baseUrl}}/api/Villa
 
 ###
 
-GET {{baseUrl}}/api/Villa/1
+@idx = 4
+GET {{baseUrl}}/api/Villa/{{idx}}
 
 ###
 
@@ -24,16 +25,16 @@ Content-Type: {{contentType}}
 }
 
 ###
-@id = 3
-DELETE {{baseUrl}}/api/Villa/{{id}}
+@idy = 3
+DELETE {{baseUrl}}/api/Villa/{{idy}}
 Accept: {{contentType}}
 
 ###
-
-PATCH {{baseUrl}}/api/Villa/1
+@idz = 4
+PATCH {{baseUrl}}/api/Villa/{{idz}}
 Content-Type: {{patchContentType}}
 
 [
-  { "op": "replace", "path": "/nombre", "value": "Nueva Villa Fátima" }
+  { "op": "replace", "path": "/detalle", "value": "Detalle de la Nueva Villa de Fátima Silva" }
 ]
 

@@ -86,8 +86,8 @@ public class VillaController : ControllerBase
             Tarifa = villaDto.Tarifa,
             ImagenURL = villaDto.ImagenUrl,
             Amenidad = villaDto.Amenidad,
-            FechaCreacion = DateTime.Now,
-            FechaActualizacion = DateTime.Now
+            FechaCreacion = DateTime.UtcNow,
+            FechaActualizacion = DateTime.UtcNow
         };
 
         _dbContext.Villas.Add(modelo);
@@ -150,12 +150,15 @@ public class VillaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaDto> patchDto)
     {
-        if (patchDto == null || id == 0) return BadRequest();
+        if (patchDto == null || id == 0) 
+            return BadRequest();
 
         var villaEntity = _dbContext.Villas.FirstOrDefault(x => x.Id == id);
-        if (villaEntity is null) return NotFound();
 
-        VillaDto villaDto = new VillaDto
+        if (villaEntity is null) 
+            return NotFound();
+
+        var villaDto = new VillaDto
         {
             Id = villaEntity.Id,
             Nombre = villaEntity.Nombre,
@@ -169,7 +172,8 @@ public class VillaController : ControllerBase
 
         patchDto.ApplyTo(villaDto, ModelState);
 
-        TryValidateModel(villaDto);
+        if(!TryValidateModel(villaDto))
+            return BadRequest(ModelState);
 
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
