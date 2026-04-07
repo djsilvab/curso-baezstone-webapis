@@ -1,7 +1,9 @@
-﻿using BaezStone.MagicVilla.Api.Models.Dto;
+﻿using BaezStone.MagicVilla.Api.Models;
+using BaezStone.MagicVilla.Api.Models.Dto;
 using BaezStone.MagicVilla.Api.Store;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BaezStone.MagicVilla.Api.Controllers;
 
@@ -10,10 +12,13 @@ namespace BaezStone.MagicVilla.Api.Controllers;
 public class VillaController : ControllerBase
 {
     private readonly ILogger<VillaController> _logger;
+    private readonly ApplicationDbContext _dbContext;
 
-    public VillaController(ILogger<VillaController> logger)
+    public VillaController(ILogger<VillaController> logger, 
+                            ApplicationDbContext dbContext)
     {
         _logger = logger;
+        _dbContext = dbContext;
     }
 
 
@@ -22,7 +27,7 @@ public class VillaController : ControllerBase
     public ActionResult<IEnumerable<VillaDto>> GetVillas()
     {
         _logger.LogInformation("Obtener todas las villas");
-        return Ok(VillaStore.villaList);
+        return Ok(_dbContext.Villas.ToList());
     }
 
     [HttpGet("{id:int}", Name = "GetVilla")]
@@ -36,31 +41,62 @@ public class VillaController : ControllerBase
             _logger.LogError($"Error al obtener la Villa con Id : {id}");
             return BadRequest("Id debe ser mayor a cero.");
         }
-        var villa = VillaStore.villaList.FirstOrDefault(v => v.Id == id);
+        //var villa = VillaStore.villaList.FirstOrDefault(v => v.Id == id);
+        var villa = _dbContext.Villas.FirstOrDefault(v => v.Id == id);
         if (villa is null) return NotFound();
         return Ok(villa);
     }
 
+    // Reemplazo del método CreateVilla
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public ActionResult<VillaDto> CreateVilla([FromBody] VillaDto villaDto)
     {
-        if (villaDto is null) return BadRequest("El objeto es nulo.");
-        if (!ModelState.IsValid) return BadRequest(ModelState);
-        if (villaDto.Id > 0) return StatusCode(StatusCodes.Status400BadRequest, "El Id debe ser cero");
-        if (VillaStore.villaList.FirstOrDefault(x => x.Nombre.Equals(villaDto.Nombre, StringComparison.OrdinalIgnoreCase)) is not null)
+        if (villaDto is null) 
+            return BadRequest("El objeto es nulo.");
+
+        if (!ModelState.IsValid) 
+            return BadRequest(ModelState);
+
+        if (villaDto.Id > 0) 
+            return BadRequest("El Id debe ser cero");
+
+        // Normalizar el nombre recibido y proteger contra nulls para la consulta EF
+        var nombreNormalized = (villaDto.Nombre ?? string.Empty).Trim().ToLower();
+
+        // Usar Any y comparación en minúsculas para que EF pueda traducir la expresión a SQL
+        var existeNombre = _dbContext.Villas
+            .AsNoTracking()
+            .Any(x => ((x.Nombre ?? string.Empty).ToLower()) == nombreNormalized);
+
+        if (existeNombre)
         {
             ModelState.AddModelError("NombreExistente", "Ya existe una villa con ese nombre.");
             return BadRequest(ModelState);
         }
 
-        villaDto.Id = (VillaStore.villaList.OrderByDescending(v => v.Id).FirstOrDefault()?.Id ?? 0) + 1;
+        Villa modelo = new Villa
+        {
+            Nombre = (villaDto.Nombre ?? string.Empty).Trim(),
+            Detalle = villaDto.Detalle,
+            Ocupantes = villaDto.Ocupantes,
+            MetrosCuadrados = villaDto.MetrosCuadrados,
+            Tarifa = villaDto.Tarifa,
+            ImagenURL = villaDto.ImagenUrl,
+            Amenidad = villaDto.Amenidad,
+            FechaCreacion = DateTime.UtcNow,
+            FechaActualizacion = DateTime.UtcNow
+        };
 
-        //if (VillaStore.villaList.Any(v => v.Id == villaDto.Id)) return BadRequest("Ya existe una villa con ese Id.");
-        VillaStore.villaList.Add(villaDto);
-        return CreatedAtAction(nameof(GetVilla), new { id = villaDto.Id }, villaDto);
+        _dbContext.Villas.Add(modelo);
+        _dbContext.SaveChanges();
+
+        // Asignar el Id generado al DTO antes de devolverlo
+        villaDto.Id = modelo.Id;
+
+        return CreatedAtAction(nameof(GetVilla), new { id = modelo.Id }, villaDto);
     }
 
     [HttpDelete("{id:int}")]
@@ -71,9 +107,11 @@ public class VillaController : ControllerBase
     {
         //Se utiliza IActionResult porque no se retorna un objeto
         if (id == 0) return BadRequest("Id debe ser mayor a cero.");
-        var villa = VillaStore.villaList.FirstOrDefault(v => v.Id == id);
+        var villa = _dbContext.Villas.FirstOrDefault(v => v.Id == id);
         if (villa is null) return NotFound();
-        VillaStore.villaList.Remove(villa);
+        //VillaStore.villaList.Remove(villa);
+        _dbContext.Villas.Remove(villa);
+        _dbContext.SaveChanges();
         return NoContent(); //204 No Content
     }
 
@@ -83,11 +121,26 @@ public class VillaController : ControllerBase
     public IActionResult UpdateVilla(int id, [FromBody] VillaDto villaDto)
     {
         if (villaDto == null || id != villaDto.Id) return BadRequest();
-        var villa = VillaStore.villaList.FirstOrDefault(x => x.Id == id);
-        if (villa is null) return NotFound();
-        villa.Nombre = villaDto.Nombre;
-        villa.Ocupantes = villaDto.Ocupantes;
-        villa.MetrosCuadrados = villaDto.MetrosCuadrados;
+        //var villa = VillaStore.villaList.FirstOrDefault(x => x.Id == id);
+        //if (villa is null) return NotFound();
+        //villa.Nombre = villaDto.Nombre;
+        //villa.Ocupantes = villaDto.Ocupantes;
+        //villa.MetrosCuadrados = villaDto.MetrosCuadrados;
+
+        Villa modelo = new Villa
+        {
+            Id = id,
+            Nombre = villaDto.Nombre,
+            Detalle = villaDto.Detalle,
+            Ocupantes = villaDto.Ocupantes,
+            MetrosCuadrados = villaDto.MetrosCuadrados,
+            Tarifa = villaDto.Tarifa,
+            ImagenURL = villaDto.ImagenUrl,
+            Amenidad = villaDto.Amenidad
+        };
+
+        _dbContext.Villas.Update(modelo);
+        _dbContext.SaveChanges();
 
         return NoContent();
     }
@@ -97,13 +150,45 @@ public class VillaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaDto> patchDto)
     {
-        if (patchDto == null || id == 0) return BadRequest();
+        if (patchDto == null || id == 0) 
+            return BadRequest();
 
-        var villa = VillaStore.villaList.FirstOrDefault(x => x.Id == id);
-        if (villa is null) return NotFound();
+        var villaEntity = _dbContext.Villas.FirstOrDefault(x => x.Id == id);
 
-        patchDto.ApplyTo(villa, ModelState);
+        if (villaEntity is null) 
+            return NotFound();
+
+        var villaDto = new VillaDto
+        {
+            Id = villaEntity.Id,
+            Nombre = villaEntity.Nombre,
+            Detalle = villaEntity.Detalle,
+            Ocupantes = villaEntity.Ocupantes,
+            MetrosCuadrados = villaEntity.MetrosCuadrados,
+            Tarifa = villaEntity.Tarifa,
+            ImagenUrl = villaEntity.ImagenURL,
+            Amenidad = villaEntity.Amenidad
+        };
+
+        patchDto.ApplyTo(villaDto, ModelState);
+
+        if(!TryValidateModel(villaDto))
+            return BadRequest(ModelState);
+
         if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        // Mapear cambios al entity trackeado y persistir
+        villaEntity.Nombre = villaDto.Nombre;
+        villaEntity.Detalle = villaDto.Detalle;
+        villaEntity.Ocupantes = villaDto.Ocupantes;
+        villaEntity.MetrosCuadrados = villaDto.MetrosCuadrados;
+        villaEntity.Tarifa = villaDto.Tarifa;
+        villaEntity.ImagenURL = villaDto.ImagenUrl;
+        villaEntity.Amenidad = villaDto.Amenidad;
+        villaEntity.FechaActualizacion = DateTime.Now;
+
+        _dbContext.Villas.Update(villaEntity);
+        _dbContext.SaveChanges();
 
         return NoContent();
     }
