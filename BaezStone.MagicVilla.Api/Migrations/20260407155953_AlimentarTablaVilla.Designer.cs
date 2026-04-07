@@ -4,6 +4,7 @@ using BaezStone.MagicVilla.Api.Store;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BaezStone.MagicVilla.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260407155953_AlimentarTablaVilla")]
+    partial class AlimentarTablaVilla
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -71,8 +74,8 @@ namespace BaezStone.MagicVilla.Api.Migrations
                             Id = 1,
                             Amenidad = "",
                             Detalle = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                            FechaActualizacion = new DateTime(2026, 4, 7, 11, 44, 59, 958, DateTimeKind.Local).AddTicks(8275),
-                            FechaCreacion = new DateTime(2026, 4, 7, 11, 44, 59, 958, DateTimeKind.Local).AddTicks(8258),
+                            FechaActualizacion = new DateTime(2026, 4, 7, 10, 59, 53, 241, DateTimeKind.Local).AddTicks(1231),
+                            FechaCreacion = new DateTime(2026, 4, 7, 10, 59, 53, 241, DateTimeKind.Local).AddTicks(1219),
                             ImagenURL = "https://dotnetmasteryimages.blob.core.windows.net/bluevillaimages/villa3.jpg",
                             MetrosCuadrados = 550,
                             Nombre = "Villa Real",
@@ -84,8 +87,8 @@ namespace BaezStone.MagicVilla.Api.Migrations
                             Id = 2,
                             Amenidad = "",
                             Detalle = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                            FechaActualizacion = new DateTime(2026, 4, 7, 11, 44, 59, 958, DateTimeKind.Local).AddTicks(8278),
-                            FechaCreacion = new DateTime(2026, 4, 7, 11, 44, 59, 958, DateTimeKind.Local).AddTicks(8278),
+                            FechaActualizacion = new DateTime(2026, 4, 7, 10, 59, 53, 241, DateTimeKind.Local).AddTicks(1235),
+                            FechaCreacion = new DateTime(2026, 4, 7, 10, 59, 53, 241, DateTimeKind.Local).AddTicks(1234),
                             ImagenURL = "https://dotnetmasteryimages.blob.core.windows.net/bluevillaimages/villa1.jpg",
                             MetrosCuadrados = 550,
                             Nombre = "Premium Pool Villa",

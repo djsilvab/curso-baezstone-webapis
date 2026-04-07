@@ -6,7 +6,27 @@ GET {{baseUrl}}/api/Villa
 
 ###
 
-GET {{baseUrl}}/api/Villa/0
+GET {{baseUrl}}/api/Villa/1
+
+###
+
+POST {{baseUrl}}/api/Villa
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Villa El Salvador",
+  "detalle": "Detalle de la Villa Fátima",
+  "tarifa": 200.0,
+  "ocupantes": 4,
+  "metroscuadrados": 500,
+  "imagenurl": "https://example.com/villa-fatima.jpg",
+  "amenidad": "Piscina privada"
+}
+
+###
+@id = 3
+DELETE {{baseUrl}}/api/Villa/{{id}}
+Accept: {{contentType}}
 
 ###
 
@@ -16,3 +36,4 @@ Content-Type: {{patchContentType}}
 [
   { "op": "replace", "path": "/nombre", "value": "Nueva Villa Fátima" }
 ]
+
