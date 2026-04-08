@@ -6,7 +6,7 @@ GET {{baseUrl}}/api/Villa
 
 ###
 
-@idx = 4
+@idx = 5
 GET {{baseUrl}}/api/Villa/{{idx}}
 
 ###
@@ -15,8 +15,8 @@ POST {{baseUrl}}/api/Villa
 Content-Type: {{contentType}}
 
 {
-  "nombre": "Villa El Salvador",
-  "detalle": "Detalle de la Villa Fátima",
+  "nombre": "Villa Test",
+  "detalle": "Detalle de la Villa Test",
   "tarifa": 200.0,
   "ocupantes": 4,
   "metroscuadrados": 500,
@@ -30,11 +30,11 @@ DELETE {{baseUrl}}/api/Villa/{{idy}}
 Accept: {{contentType}}
 
 ###
-@idz = 4
+@idz = 5
 PATCH {{baseUrl}}/api/Villa/{{idz}}
 Content-Type: {{patchContentType}}
 
 [
-  { "op": "replace", "path": "/detalle", "value": "Detalle de la Nueva Villa de Fátima Silva" }
+  { "op": "replace", "path": "/detalle", "value": "Otros Detalle de la Nueva Villa Test" }
 ]
 
