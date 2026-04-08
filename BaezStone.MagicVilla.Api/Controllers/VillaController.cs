@@ -49,7 +49,7 @@ public class VillaController : ControllerBase
     {
         if (id <= 0)
         {
-            _logger.LogWarning($"Id inválido al obtener villa: {id}");
+            _logger.LogWarning("Id inválido al obtener villa: {Id}", id);
             return BadRequest("Id debe ser mayor a cero.");
         }
         
@@ -84,8 +84,9 @@ public class VillaController : ControllerBase
         var nombre = (villaDto.Nombre ?? string.Empty).Trim();
 
         // Usar Any y comparación en minúsculas para que EF pueda traducir la expresión a SQL
-        var existeNombre = await _dbContext.Villas      
-                            .AnyAsync(x => x.Nombre == nombre);
+        var existeNombre = await _dbContext
+                                    .Villas
+                                    .AnyAsync(x => x.Nombre.ToLower() == nombre.ToLower());
 
         if (existeNombre)
             return Conflict(new { message = "Ya existe una villa con ese nombre" });
@@ -153,19 +154,7 @@ public class VillaController : ControllerBase
         var villa = await _dbContext.Villas.FirstOrDefaultAsync(x => x.Id == id);
 
         if (villa is null) 
-            return NotFound();
-
-        var modelo = new Villa
-        {
-            Id = id,
-            Nombre = villaDto.Nombre,
-            Detalle = villaDto.Detalle,
-            Ocupantes = villaDto.Ocupantes,
-            MetrosCuadrados = villaDto.MetrosCuadrados,
-            Tarifa = villaDto.Tarifa,
-            ImagenURL = villaDto.ImagenUrl,
-            Amenidad = villaDto.Amenidad
-        };
+            return NotFound();       
 
         villa.Nombre = villaDto.Nombre;
         villa.Detalle = villaDto.Detalle;
