@@ -4,6 +4,7 @@ using BaezStone.MagicVilla.Api.Store;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 namespace BaezStone.MagicVilla.Api.Controllers;
 
@@ -13,134 +14,144 @@ public class VillaController : ControllerBase
 {
     private readonly ILogger<VillaController> _logger;
     private readonly ApplicationDbContext _dbContext;
+    private readonly IMapper _mapper;
 
     public VillaController(ILogger<VillaController> logger, 
-                            ApplicationDbContext dbContext)
+                            ApplicationDbContext dbContext,
+                            IMapper mapper)
     {
         _logger = logger;
         _dbContext = dbContext;
+        _mapper = mapper;
     }
-
 
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<VillaDto>> GetVillas()
+    public async Task<ActionResult<IEnumerable<VillaDto>>> GetVillas()
     {
         _logger.LogInformation("Obtener todas las villas");
-        return Ok(_dbContext.Villas.ToList());
+
+        var villasDto = await _dbContext.Villas.AsNoTracking().Select(x => new VillaDto { 
+            Id = x.Id,
+            Nombre = x.Nombre,
+            Detalle = x.Detalle,
+            Ocupantes = x.Ocupantes,
+            MetrosCuadrados = x.MetrosCuadrados,
+            Tarifa = x.Tarifa,
+            ImagenUrl = x.ImagenURL,
+            Amenidad = x.Amenidad
+        }).ToListAsync();
+
+        return Ok(villasDto);
     }
 
     [HttpGet("{id:int}", Name = "GetVilla")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<VillaDto> GetVilla(int id)
+    public async Task<ActionResult<VillaDto>> GetVilla(int id)
     {
-        if (id == 0)
+        if (id <= 0)
         {
-            _logger.LogError($"Error al obtener la Villa con Id : {id}");
-            return BadRequest("Id debe ser mayor a cero.");
+            _logger.LogWarning("Id inválido al obtener villa: {Id}", id);
+            return BadRequest(new { message = "Id debe ser mayor a cero." });
         }
-        //var villa = VillaStore.villaList.FirstOrDefault(v => v.Id == id);
-        var villa = _dbContext.Villas.FirstOrDefault(v => v.Id == id);
-        if (villa is null) return NotFound();
-        return Ok(villa);
-    }
 
-    // Reemplazo del método CreateVilla
+        var villaDto = await _dbContext.Villas.AsNoTracking().Where(x => x.Id == id).Select(x => new VillaDto
+        {
+            Id = x.Id,
+            Nombre = x.Nombre,
+            Detalle = x.Detalle,
+            Ocupantes = x.Ocupantes,
+            MetrosCuadrados = x.MetrosCuadrados,
+            Tarifa = x.Tarifa,
+            ImagenUrl = x.ImagenURL,
+            Amenidad = x.Amenidad
+        }).FirstOrDefaultAsync();
+
+        if (villaDto is null) 
+            return NotFound();
+
+        return Ok(villaDto);
+    }
+        
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public ActionResult<VillaDto> CreateVilla([FromBody] VillaDto villaDto)
+    public async Task<ActionResult<VillaDto>> CreateVilla([FromBody] VillaCreateDto createDto)
     {
-        if (villaDto is null) 
-            return BadRequest("El objeto es nulo.");
-
-        if (!ModelState.IsValid) 
-            return BadRequest(ModelState);
-
-        if (villaDto.Id > 0) 
-            return BadRequest("El Id debe ser cero");
+        if (createDto is null)
+            return BadRequest(new { message = "El objeto es nulo." });
 
         // Normalizar el nombre recibido y proteger contra nulls para la consulta EF
-        var nombreNormalized = (villaDto.Nombre ?? string.Empty).Trim().ToLower();
+        var nombre = (createDto.Nombre ?? string.Empty).Trim();
 
         // Usar Any y comparación en minúsculas para que EF pueda traducir la expresión a SQL
-        var existeNombre = _dbContext.Villas
-            .AsNoTracking()
-            .Any(x => ((x.Nombre ?? string.Empty).ToLower()) == nombreNormalized);
+        var existeNombre = await _dbContext
+                                    .Villas
+                                    .AnyAsync(x => x.Nombre == nombre);
 
         if (existeNombre)
-        {
-            ModelState.AddModelError("NombreExistente", "Ya existe una villa con ese nombre.");
-            return BadRequest(ModelState);
-        }
+            return Conflict(new { message = "Ya existe una villa con ese nombre" });
 
-        Villa modelo = new Villa
-        {
-            Nombre = (villaDto.Nombre ?? string.Empty).Trim(),
-            Detalle = villaDto.Detalle,
-            Ocupantes = villaDto.Ocupantes,
-            MetrosCuadrados = villaDto.MetrosCuadrados,
-            Tarifa = villaDto.Tarifa,
-            ImagenURL = villaDto.ImagenUrl,
-            Amenidad = villaDto.Amenidad,
-            FechaCreacion = DateTime.UtcNow,
-            FechaActualizacion = DateTime.UtcNow
-        };
+        var modelo = _mapper.Map<Villa>(createDto);
 
-        _dbContext.Villas.Add(modelo);
-        _dbContext.SaveChanges();
+        modelo.Nombre = nombre;
+        modelo.FechaCreacion = DateTime.UtcNow;
+        modelo.FechaActualizacion = DateTime.UtcNow;
 
-        // Asignar el Id generado al DTO antes de devolverlo
-        villaDto.Id = modelo.Id;
+        await _dbContext.Villas.AddAsync(modelo);
+        await _dbContext.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetVilla), new { id = modelo.Id }, villaDto);
+        var resultDto = _mapper.Map<VillaDto>(modelo);
+
+        return CreatedAtAction(nameof(GetVilla), new { id = modelo.Id }, resultDto);
     }
 
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public IActionResult DeleteVilla(int id)
+    public async Task<IActionResult> DeleteVilla(int id)
     {
         //Se utiliza IActionResult porque no se retorna un objeto
-        if (id == 0) return BadRequest("Id debe ser mayor a cero.");
-        var villa = _dbContext.Villas.FirstOrDefault(v => v.Id == id);
-        if (villa is null) return NotFound();
-        //VillaStore.villaList.Remove(villa);
-        _dbContext.Villas.Remove(villa);
-        _dbContext.SaveChanges();
+        if (id <= 0) 
+            return BadRequest("Id debe ser mayor a cero.");
+
+        var rowAffected = await _dbContext.Villas
+                                            .Where(v => v.Id == id)
+                                            .ExecuteDeleteAsync();
+
+        if (rowAffected == 0) 
+            return NotFound();
+
         return NoContent(); //204 No Content
     }
 
     [HttpPut("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public IActionResult UpdateVilla(int id, [FromBody] VillaDto villaDto)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateVilla(int id, [FromBody] VillaUpdateDto updateDto)
     {
-        if (villaDto == null || id != villaDto.Id) return BadRequest();
-        //var villa = VillaStore.villaList.FirstOrDefault(x => x.Id == id);
-        //if (villa is null) return NotFound();
-        //villa.Nombre = villaDto.Nombre;
-        //villa.Ocupantes = villaDto.Ocupantes;
-        //villa.MetrosCuadrados = villaDto.MetrosCuadrados;
+        if (updateDto is null )
+            return BadRequest(new { message = "El objeto es nulo." });
 
-        Villa modelo = new Villa
-        {
-            Id = id,
-            Nombre = villaDto.Nombre,
-            Detalle = villaDto.Detalle,
-            Ocupantes = villaDto.Ocupantes,
-            MetrosCuadrados = villaDto.MetrosCuadrados,
-            Tarifa = villaDto.Tarifa,
-            ImagenURL = villaDto.ImagenUrl,
-            Amenidad = villaDto.Amenidad
-        };
+        if (id != updateDto.Id)
+            return BadRequest(new { message = "El Id no coincide." });
 
-        _dbContext.Villas.Update(modelo);
-        _dbContext.SaveChanges();
+        var villa = await _dbContext.Villas.FirstOrDefaultAsync(x => x.Id == id);
+
+        if (villa is null) 
+            return NotFound();
+
+        _mapper.Map(updateDto, villa); // Mapear los cambios del DTO al entity trackeado
+
+        villa.FechaActualizacion = DateTime.UtcNow;
+                
+        await _dbContext.SaveChangesAsync();
 
         return NoContent();
     }
@@ -148,47 +159,31 @@ public class VillaController : ControllerBase
     [HttpPatch("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaDto> patchDto)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdatePartialVilla(int id, JsonPatchDocument<VillaUpdateDto> patchDto)
     {
-        if (patchDto == null || id == 0) 
-            return BadRequest();
+        if (patchDto == null || id <= 0) 
+            return BadRequest(new { message = "Datos inválidos." });
 
-        var villaEntity = _dbContext.Villas.FirstOrDefault(x => x.Id == id);
+        var villaEntity = await _dbContext.Villas.FirstOrDefaultAsync(x => x.Id == id);
 
         if (villaEntity is null) 
             return NotFound();
 
-        var villaDto = new VillaDto
-        {
-            Id = villaEntity.Id,
-            Nombre = villaEntity.Nombre,
-            Detalle = villaEntity.Detalle,
-            Ocupantes = villaEntity.Ocupantes,
-            MetrosCuadrados = villaEntity.MetrosCuadrados,
-            Tarifa = villaEntity.Tarifa,
-            ImagenUrl = villaEntity.ImagenURL,
-            Amenidad = villaEntity.Amenidad
-        };
+        var villaDto = _mapper.Map<VillaUpdateDto>(villaEntity);
 
         patchDto.ApplyTo(villaDto, ModelState);
 
-        if(!TryValidateModel(villaDto))
+        villaDto.Id = id; // Asegurar que el Id no se modifique
+
+        if (!TryValidateModel(villaDto))
             return BadRequest(ModelState);
 
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        _mapper.Map(villaDto, villaEntity); // Mapear los cambios del DTO al entity trackeado
 
-        // Mapear cambios al entity trackeado y persistir
-        villaEntity.Nombre = villaDto.Nombre;
-        villaEntity.Detalle = villaDto.Detalle;
-        villaEntity.Ocupantes = villaDto.Ocupantes;
-        villaEntity.MetrosCuadrados = villaDto.MetrosCuadrados;
-        villaEntity.Tarifa = villaDto.Tarifa;
-        villaEntity.ImagenURL = villaDto.ImagenUrl;
-        villaEntity.Amenidad = villaDto.Amenidad;
-        villaEntity.FechaActualizacion = DateTime.Now;
-
-        _dbContext.Villas.Update(villaEntity);
-        _dbContext.SaveChanges();
+        villaEntity.FechaActualizacion = DateTime.UtcNow;
+                
+        await _dbContext.SaveChangesAsync();
 
         return NoContent();
     }

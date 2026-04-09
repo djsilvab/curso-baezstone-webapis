@@ -1,3 +1,4 @@
+using BaezStone.MagicVilla.Api.MapperX;
 using BaezStone.MagicVilla.Api.Store;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 });
+
+builder.Services.AddAutoMapper(typeof(MappingConfig));
 
 var app = builder.Build();
 
