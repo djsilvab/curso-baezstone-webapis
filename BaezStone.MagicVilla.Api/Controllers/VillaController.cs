@@ -4,7 +4,7 @@ using BaezStone.MagicVilla.Api.Store;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using AutoMapper;
+using Mapster;
 
 namespace BaezStone.MagicVilla.Api.Controllers;
 
@@ -14,15 +14,15 @@ public class VillaController : ControllerBase
 {
     private readonly ILogger<VillaController> _logger;
     private readonly ApplicationDbContext _dbContext;
-    private readonly IMapper _mapper;
+    //private readonly IMapper _mapper;
 
     public VillaController(ILogger<VillaController> logger, 
-                            ApplicationDbContext dbContext,
-                            IMapper mapper)
+                            ApplicationDbContext dbContext
+                            )
     {
         _logger = logger;
         _dbContext = dbContext;
-        _mapper = mapper;
+        //_mapper = mapper;
     }
 
     [HttpGet]
@@ -95,8 +95,8 @@ public class VillaController : ControllerBase
 
         if (existeNombre)
             return Conflict(new { message = "Ya existe una villa con ese nombre" });
-
-        var modelo = _mapper.Map<Villa>(createDto);
+        
+        var modelo = createDto.Adapt<Villa>();
 
         modelo.Nombre = nombre;
         modelo.FechaCreacion = DateTime.UtcNow;
@@ -104,8 +104,8 @@ public class VillaController : ControllerBase
 
         await _dbContext.Villas.AddAsync(modelo);
         await _dbContext.SaveChangesAsync();
-
-        var resultDto = _mapper.Map<VillaDto>(modelo);
+        
+        var resultDto = modelo.Adapt<VillaDto>();
 
         return CreatedAtAction(nameof(GetVilla), new { id = modelo.Id }, resultDto);
     }
@@ -147,7 +147,8 @@ public class VillaController : ControllerBase
         if (villa is null) 
             return NotFound();
 
-        _mapper.Map(updateDto, villa); // Mapear los cambios del DTO al entity trackeado
+        //_mapper.Map(updateDto, villa); // Mapear los cambios del DTO al entity trackeado
+        updateDto.Adapt(villa); // Mapear los cambios del DTO al entity trackeado
 
         villa.FechaActualizacion = DateTime.UtcNow;
                 
@@ -169,8 +170,8 @@ public class VillaController : ControllerBase
 
         if (villaEntity is null) 
             return NotFound();
-
-        var villaDto = _mapper.Map<VillaUpdateDto>(villaEntity);
+        
+        var villaDto = villaEntity.Adapt<VillaUpdateDto>();
 
         patchDto.ApplyTo(villaDto, ModelState);
 
@@ -179,7 +180,8 @@ public class VillaController : ControllerBase
         if (!TryValidateModel(villaDto))
             return BadRequest(ModelState);
 
-        _mapper.Map(villaDto, villaEntity); // Mapear los cambios del DTO al entity trackeado
+        //_mapper.Map(villaDto, villaEntity); // Mapear los cambios del DTO al entity trackeado
+        villaDto.Adapt(villaEntity); // Mapear los cambios del DTO al entity trackeado
 
         villaEntity.FechaActualizacion = DateTime.UtcNow;
                 

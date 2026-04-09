@@ -1,6 +1,7 @@
-using BaezStone.MagicVilla.Api.MapperX;
 using BaezStone.MagicVilla.Api.Store;
 using Microsoft.EntityFrameworkCore;
+using Mapster;
+using BaezStone.MagicVilla.Api.Mapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +17,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 });
 
-builder.Services.AddAutoMapper(typeof(MappingConfig));
+MappingConfig.RegisterMappings();
 
 var app = builder.Build();
 
