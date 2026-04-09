@@ -6,7 +6,7 @@ GET {{baseUrl}}/api/Villa
 
 ###
 
-@idx = 5
+@idx = 6
 GET {{baseUrl}}/api/Villa/{{idx}}
 
 ###
@@ -15,8 +15,8 @@ POST {{baseUrl}}/api/Villa
 Content-Type: {{contentType}}
 
 {
-  "nombre": "Villa Test",
-  "detalle": "Detalle de la Villa Test",
+  "nombre": "Villa Maria",
+  "detalle": "Detalle de la Villa Maria",
   "tarifa": 200.0,
   "ocupantes": 4,
   "metroscuadrados": 500,
@@ -30,11 +30,11 @@ DELETE {{baseUrl}}/api/Villa/{{idy}}
 Accept: {{contentType}}
 
 ###
-@idz = 5
+@idz = 6
 PATCH {{baseUrl}}/api/Villa/{{idz}}
 Content-Type: {{patchContentType}}
 
 [
-  { "op": "replace", "path": "/detalle", "value": "Otros Detalle de la Nueva Villa Test" }
+  { "op": "replace", "path": "/ocupantes", "value": "666" }
 ]
 
