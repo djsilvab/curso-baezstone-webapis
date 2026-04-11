@@ -2,6 +2,8 @@ using BaezStone.MagicVilla.Api.Store;
 using Microsoft.EntityFrameworkCore;
 using Mapster;
 using BaezStone.MagicVilla.Api.Mapper;
+using BaezStone.MagicVilla.Api.Repositorio.IRepositorio;
+using BaezStone.MagicVilla.Api.Repositorio;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
 });
 
 MappingConfig.RegisterMappings();
+
+builder.Services.AddScoped<IVillaRepositorio, VillaRepositorio>();
 
 var app = builder.Build();
 

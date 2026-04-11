@@ -6,7 +6,7 @@ GET {{baseUrl}}/api/Villa
 
 ###
 
-@idx = 10
+@idx = 1001
 GET {{baseUrl}}/api/Villa/{{idx}}
 
 ###
@@ -15,7 +15,7 @@ POST {{baseUrl}}/api/Villa
 Content-Type: {{contentType}}
 
 {
-  "nombre": "Villa de Laredo",
+  "nombre": "Villa El Porvenir",
   "detalle": "Detalle de la Villa Maria",
   "tarifa": 200.0,
   "ocupantes": 4,
@@ -26,33 +26,32 @@ Content-Type: {{contentType}}
 
 ###
 
-@ida = 10
+@ida = 1001
 PUT {{baseUrl}}/api/Villa/{{ida}}
 Content-Type: {{contentType}}
 
 {
-  "id": {{ida}},
-  "nombre":"Villa La Esperanza",
+  "id": {{ida}}, 
+  "nombre": "Villa El Porvenir",
   "detalle": "Detalle de la Villa Maria",
-  "tarifa": 200.0,
   "ocupantes": 4,
-  "metroscuadrados": 500,
-  "imagenurl": "https://example.com/villa-fatima.jpg",
+  "metrosCuadrados": 500,
+  "tarifa": 200.0,
+  "imagenUrl": null,
   "amenidad": "Piscina privada"
 }
 
 ###
-@idy = 3
+@idy = 1001
 DELETE {{baseUrl}}/api/Villa/{{idy}}
 Accept: {{contentType}}
 
 ###
-@idz = 10
+@idz = 1002
 PATCH {{baseUrl}}/api/Villa/{{idz}}
 Content-Type: {{patchContentType}}
 
-[
-  { "op": "replace", "path": "/tarifa", "value": "250.00" },
-  { "op": "replace", "path": "/amenidad", "value": "Jacuzzi" }
+[  
+  { "op": "replace", "path": "/imagenUrl", "value": "https://example.com/villa-fatima-300.jpg" }
 ]
 
