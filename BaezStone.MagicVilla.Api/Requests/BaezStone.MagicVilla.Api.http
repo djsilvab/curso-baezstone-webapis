@@ -15,13 +15,13 @@ POST {{baseUrl}}/api/Villa
 Content-Type: {{contentType}}
 
 {
-  "nombre": "Villa El Porvenir",
-  "detalle": "Detalle de la Villa Maria",
-  "tarifa": 200.0,
-  "ocupantes": 4,
-  "metroscuadrados": 500,
-  "imagenurl": "https://example.com/villa-fatima.jpg",
-  "amenidad": "Piscina privada"
+  "nombre": "Villa Trujillo",
+  "detalle": "Detalle de la Villa Trujillo",
+  "tarifa": 250.0,
+  "ocupantes": 44,
+  "metroscuadrados": 100,
+  "imagenurl": "https://example.com/villa-fatima-489.jpg",
+  "amenidad": "Piscina rio seco"
 }
 
 ###
