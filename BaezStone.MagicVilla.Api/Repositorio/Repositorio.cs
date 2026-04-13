@@ -31,19 +31,39 @@ public class Repositorio<T> : IRepositorio<T>
     public async Task<T?> Obtener(Expression<Func<T, bool>>? filtro = null, bool tracked = true)
     {
         IQueryable<T> query = tracked ? dbSet : dbSet.AsNoTracking();
-        
+
         return filtro is null
                ? await query.FirstOrDefaultAsync()
                : await query.FirstOrDefaultAsync(filtro);
     }
 
-    public Task<List<T>> ObtenerTodos(Expression<Func<T, bool>>? filtro = null)
+    //public Task<List<T>> ObtenerTodos(Expression<Func<T, bool>>? filtro = null)
+    //{
+    //    IQueryable<T> query = dbSet;
+
+    //    return filtro is null
+    //           ? query.ToListAsync()
+    //           : query.Where(filtro).ToListAsync();
+    //}
+
+    public async Task<List<T>> ObtenerTodos(Expression<Func<T, bool>>? filtro = null,
+        string? includeProperties = null)
     {
         IQueryable<T> query = dbSet;
 
-        return filtro is null
-               ? query.ToListAsync()
-               : query.Where(filtro).ToListAsync();
+        if (filtro != null)
+            query = query.Where(filtro);
+
+        if (!string.IsNullOrEmpty(includeProperties))
+        {
+            foreach (var includeProp 
+                in includeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProp);
+            }
+        }
+
+        return await query.ToListAsync();
     }
 
     public async Task Remover(T entidad)
