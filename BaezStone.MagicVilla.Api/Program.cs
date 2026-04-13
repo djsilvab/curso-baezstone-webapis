@@ -1,6 +1,9 @@
-using BaezStone.MagicVilla.Api.MapperX;
 using BaezStone.MagicVilla.Api.Store;
 using Microsoft.EntityFrameworkCore;
+using Mapster;
+using BaezStone.MagicVilla.Api.Mapper;
+using BaezStone.MagicVilla.Api.Repositorio.IRepositorio;
+using BaezStone.MagicVilla.Api.Repositorio;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +19,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 });
 
-builder.Services.AddAutoMapper(typeof(MappingConfig));
+MappingConfig.RegisterMappings();
+
+builder.Services.AddScoped<IVillaRepositorio, VillaRepositorio>();
+builder.Services.AddScoped<INumeroVillaRepositorio, NumeroVillaRepositorio>();
 
 var app = builder.Build();
 

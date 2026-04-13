@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BaezStone.MagicVilla.Api.Models;
 public class Villa
@@ -13,6 +12,7 @@ public class Villa
     public double Tarifa { get; set; }
     public int Ocupantes { get; set; }
     public int MetrosCuadrados { get; set; }
+
     public string ImagenURL { get; set; }
     public string Amenidad { get; set; }
     public DateTime FechaCreacion { get; set; }

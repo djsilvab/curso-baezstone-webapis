@@ -4,6 +4,7 @@ using BaezStone.MagicVilla.Api.Store;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BaezStone.MagicVilla.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260412052952_AddNumeroVillaTabla")]
+    partial class AddNumeroVillaTabla
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,15 +31,14 @@ namespace BaezStone.MagicVilla.Api.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("DetalleEspecial")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("FechaActualizacion")
+                    b.Property<DateTime>("FechaActualizacion")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("VillaId")
                         .HasColumnType("int");
@@ -97,8 +99,8 @@ namespace BaezStone.MagicVilla.Api.Migrations
                             Id = 1,
                             Amenidad = "",
                             Detalle = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                            FechaActualizacion = new DateTime(2026, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FechaCreacion = new DateTime(2026, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            FechaActualizacion = new DateTime(2026, 4, 12, 0, 29, 49, 855, DateTimeKind.Local).AddTicks(2880),
+                            FechaCreacion = new DateTime(2026, 4, 12, 0, 29, 49, 855, DateTimeKind.Local).AddTicks(2870),
                             ImagenURL = "https://dotnetmasteryimages.blob.core.windows.net/bluevillaimages/villa3.jpg",
                             MetrosCuadrados = 550,
                             Nombre = "Villa Real",
@@ -110,8 +112,8 @@ namespace BaezStone.MagicVilla.Api.Migrations
                             Id = 2,
                             Amenidad = "",
                             Detalle = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                            FechaActualizacion = new DateTime(2026, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FechaCreacion = new DateTime(2026, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            FechaActualizacion = new DateTime(2026, 4, 12, 0, 29, 49, 855, DateTimeKind.Local).AddTicks(2883),
+                            FechaCreacion = new DateTime(2026, 4, 12, 0, 29, 49, 855, DateTimeKind.Local).AddTicks(2882),
                             ImagenURL = "https://dotnetmasteryimages.blob.core.windows.net/bluevillaimages/villa1.jpg",
                             MetrosCuadrados = 550,
                             Nombre = "Premium Pool Villa",

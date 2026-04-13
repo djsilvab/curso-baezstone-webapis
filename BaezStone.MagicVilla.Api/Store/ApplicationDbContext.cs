@@ -11,10 +11,13 @@ public class ApplicationDbContext : DbContext
         
     }
 
-    public DbSet<Villa> Villas{ get; set; }
+    public DbSet<Villa> Villas { get; set; }
+    public DbSet<NumeroVilla> NumeroVillas { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<Villa>().HasData(
             new Villa
             {
@@ -26,8 +29,8 @@ public class ApplicationDbContext : DbContext
                 Tarifa = 200.0,
                 MetrosCuadrados = 550,
                 Amenidad = "",
-                FechaCreacion = DateTime.Now,
-                FechaActualizacion = DateTime.Now
+                FechaCreacion = new DateTime(2026, 4, 10),
+                FechaActualizacion = new DateTime(2026, 4, 10)
             },
             new Villa
             {
@@ -39,9 +42,16 @@ public class ApplicationDbContext : DbContext
                 Tarifa = 300.0,
                 MetrosCuadrados = 550,
                 Amenidad = "",
-                FechaCreacion = DateTime.Now,
-                FechaActualizacion = DateTime.Now
+                FechaCreacion = new DateTime(2026, 4, 10),
+                FechaActualizacion = new DateTime(2026, 4, 10)
             }
         );
+
+        modelBuilder.Entity<NumeroVilla>(entity =>
+        {
+            entity.Property(x => x.FechaCreacion)
+                .HasDefaultValueSql("GETUTCDATE()");           
+        });
+
     }
 }
