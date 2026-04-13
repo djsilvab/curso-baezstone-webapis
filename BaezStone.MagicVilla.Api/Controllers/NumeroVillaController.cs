@@ -34,7 +34,9 @@ public class NumeroVillaController : ControllerBase
         {
             _logger.LogInformation("Solicitud GET api/NumeroVilla iniciada.");
 
-            var numeroVillas = await _numeroVillaRepo.ObtenerTodosConVilla();
+            //var numeroVillas = await _numeroVillaRepo.ObtenerTodosConVilla();
+
+            var numeroVillas = await _numeroVillaRepo.ObtenerTodos(includeProperties: "Villa");
 
             var numeroVillasDto = numeroVillas.Adapt<List<NumeroVillaDto>>();
 
