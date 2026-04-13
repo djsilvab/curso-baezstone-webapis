@@ -22,6 +22,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
 MappingConfig.RegisterMappings();
 
 builder.Services.AddScoped<IVillaRepositorio, VillaRepositorio>();
+builder.Services.AddScoped<INumeroVillaRepositorio, NumeroVillaRepositorio>();
 
 var app = builder.Build();
 

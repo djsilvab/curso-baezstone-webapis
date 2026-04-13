@@ -5,7 +5,6 @@ using Mapster;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BaezStone.MagicVilla.Api.Controllers;
 
@@ -76,7 +75,7 @@ public class VillaController : ControllerBase
 
         try
         {
-            var villa = await _villaRepo.Obtener(x => x.Id == id, false);
+            var villa = await _villaRepo.Obtener(x => x.Id == id, tracked: false);
 
             if (villa is null)
             {
@@ -185,7 +184,7 @@ public class VillaController : ControllerBase
                 });
             }
 
-            var villa = await _villaRepo.Obtener(x => x.Id == id, false);
+            var villa = await _villaRepo.Obtener(x => x.Id == id, tracked: false);
 
             if (villa == null)
             {
@@ -247,7 +246,7 @@ public class VillaController : ControllerBase
                 });
             }
 
-            var villa = await _villaRepo.Obtener(x => x.Id == id, tracked: true);            
+            var villa = await _villaRepo.Obtener(x => x.Id == id, tracked: true);
 
             if (villa is null)
             {

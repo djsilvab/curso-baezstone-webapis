@@ -23,7 +23,7 @@ public static class MappingConfig
 
         TypeAdapterConfig<Villa, VillaUpdateDto>
             .NewConfig()
-            .Map(dest => dest.ImagenUrl, src => src.ImagenURL);
+            .Map(dest => dest.ImagenUrl, src => src.ImagenURL);       
 
     }
 }
